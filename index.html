@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>注意力挑戰 🎯</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
       * {
         margin: 0;
@@ -21,7 +25,7 @@
         padding: 20px;
       }
 
-      .container {
+      .container-wrapper {
         display: flex;
         gap: 20px;
         align-items: flex-start;
@@ -67,18 +71,6 @@
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       }
 
-      @media (max-width: 768px) {
-        .container {
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .reminder-panel {
-          width: 100%;
-          max-width: 400px;
-        }
-      }
-
       .header {
         text-align: center;
         margin-bottom: 25px;
@@ -93,6 +85,50 @@
 
       .emoji {
         font-size: 32px;
+      }
+
+      /* 自訂 Tab 樣式 */
+      .nav-tabs {
+        border: none;
+        margin-bottom: 20px;
+      }
+
+      .nav-tabs .nav-link {
+        border: none;
+        background: #f0f0f0;
+        color: #666;
+        border-radius: 15px;
+        padding: 10px 20px;
+        margin: 0 5px;
+        transition: all 0.3s ease;
+        font-weight: 600;
+      }
+
+      .nav-tabs .nav-link:hover {
+        background: #e0e0e0;
+      }
+
+      .nav-tabs .nav-link.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .mode-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 10px;
+        font-size: 12px;
+        margin-left: 5px;
+      }
+
+      .badge-challenge {
+        background: #f5576c;
+        color: white;
+      }
+
+      .badge-relax {
+        background: #56ab2f;
+        color: white;
       }
 
       .record-section {
@@ -132,14 +168,14 @@
         margin-bottom: 25px;
       }
 
-      .progress-bar {
+      .progress-bar-container {
         display: grid;
         grid-template-columns: repeat(10, 1fr);
         gap: 5px;
         margin-bottom: 10px;
       }
 
-      .progress-bar:last-child {
+      .progress-bar-container:last-child {
         margin-bottom: 0;
       }
 
@@ -191,6 +227,10 @@
 
       .start-btn.paused {
         background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      }
+
+      .start-btn.continue {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
       }
 
       .history-section {
@@ -271,6 +311,17 @@
         font-size: 14px;
       }
 
+      .relax-info {
+        background: #e8f5e9;
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        text-align: center;
+        color: #2e7d32;
+        font-size: 14px;
+        border: 2px dashed #56ab2f;
+      }
+
       ::-webkit-scrollbar {
         width: 6px;
       }
@@ -284,10 +335,22 @@
         background: #667eea;
         border-radius: 10px;
       }
+
+      @media (max-width: 768px) {
+        .container-wrapper {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .reminder-panel {
+          width: 100%;
+          max-width: 400px;
+        }
+      }
     </style>
   </head>
   <body>
-    <div class="container">
+    <div class="container-wrapper">
       <div class="reminder-panel">
         <div class="reminder-title">⚠️ 任務提醒</div>
         <div class="reminder-content">任何使自己注意力飄散掉都要重新計算</div>
@@ -299,42 +362,107 @@
           <div class="title">注意力挑戰</div>
         </div>
 
-        <div class="record-section">
-          <div class="record-label">🏆 最長專注時間</div>
-          <div class="record-time" id="recordTime">00:00:00</div>
-        </div>
+        <!-- Bootstrap Tabs -->
+        <ul
+          class="nav nav-tabs justify-content-center"
+          id="modeTabs"
+          role="tablist"
+        >
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link active"
+              id="challenge-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#challenge"
+              type="button"
+              role="tab"
+            >
+              挑戰模式 <span class="mode-badge badge-challenge">計分</span>
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="relax-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#relax"
+              type="button"
+              role="tab"
+            >
+              輕鬆訓練 <span class="mode-badge badge-relax">練習</span>
+            </button>
+          </li>
+        </ul>
 
-        <div class="current-time-section">
-          <div class="current-time" id="currentTime">00:00</div>
-        </div>
+        <div class="tab-content" id="modeTabContent">
+          <!-- 挑戰模式 -->
+          <div class="tab-pane fade show active" id="challenge" role="tabpanel">
+            <div class="record-section">
+              <div class="record-label">🏆 最長專注時間</div>
+              <div class="record-time" id="recordTime">00:00:00</div>
+            </div>
 
-        <div class="progress-section">
-          <div class="progress-bar" id="progressBar1"></div>
-          <div class="progress-bar" id="progressBar2"></div>
-        </div>
+            <div class="current-time-section">
+              <div class="current-time" id="currentTime">00:00</div>
+            </div>
 
-        <div class="control-section">
-          <button class="start-btn" id="startBtn">開始專注 ✨</button>
-        </div>
+            <div class="progress-section">
+              <div class="progress-bar-container" id="progressBar1"></div>
+              <div class="progress-bar-container" id="progressBar2"></div>
+            </div>
 
-        <div class="history-section">
-          <div class="history-header">
-            <div class="history-title">📜 歷史記錄</div>
-            <button class="clear-btn" id="clearBtn">清除</button>
+            <div class="control-section">
+              <button class="start-btn" id="startBtn">開始專注 ✨</button>
+            </div>
+
+            <div class="history-section">
+              <div class="history-header">
+                <div class="history-title">📜 歷史記錄</div>
+                <button class="clear-btn" id="clearBtn">清除</button>
+              </div>
+              <div class="history-list" id="historyList">
+                <div class="empty-history">還沒有記錄哦～開始挑戰吧！</div>
+              </div>
+            </div>
           </div>
-          <div class="history-list" id="historyList">
-            <div class="empty-history">還沒有記錄哦～開始挑戰吧！</div>
+
+          <!-- 輕鬆訓練模式 -->
+          <div class="tab-pane fade" id="relax" role="tabpanel">
+            <div class="relax-info">
+              🌱 練習模式：可隨時暫停繼續，不計入紀錄
+            </div>
+
+            <div class="current-time-section">
+              <div class="current-time" id="relaxTime">00:00</div>
+            </div>
+
+            <div class="progress-section">
+              <div class="progress-bar-container" id="relaxProgressBar1"></div>
+              <div class="progress-bar-container" id="relaxProgressBar2"></div>
+            </div>
+
+            <div class="control-section">
+              <button class="start-btn" id="relaxStartBtn">開始練習 🌿</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script>
+      // 挑戰模式變數
       let timer = null;
       let seconds = 0;
       let isRunning = false;
       let history = [];
       let bestRecord = 0;
+
+      // 輕鬆模式變數
+      let relaxTimer = null;
+      let relaxSeconds = 0;
+      let relaxIsRunning = false;
+      let relaxIsPaused = false;
 
       const startBtn = document.getElementById("startBtn");
       const currentTimeEl = document.getElementById("currentTime");
@@ -344,7 +472,12 @@
       const progressBar1 = document.getElementById("progressBar1");
       const progressBar2 = document.getElementById("progressBar2");
 
-      // 初始化進度條
+      const relaxStartBtn = document.getElementById("relaxStartBtn");
+      const relaxTimeEl = document.getElementById("relaxTime");
+      const relaxProgressBar1 = document.getElementById("relaxProgressBar1");
+      const relaxProgressBar2 = document.getElementById("relaxProgressBar2");
+
+      // 初始化進度條（挑戰模式）
       for (let i = 0; i < 10; i++) {
         const block1 = document.createElement("div");
         block1.className = "progress-block";
@@ -353,6 +486,17 @@
         const block2 = document.createElement("div");
         block2.className = "progress-block";
         progressBar2.appendChild(block2);
+      }
+
+      // 初始化進度條（輕鬆模式）
+      for (let i = 0; i < 10; i++) {
+        const block1 = document.createElement("div");
+        block1.className = "progress-block";
+        relaxProgressBar1.appendChild(block1);
+
+        const block2 = document.createElement("div");
+        block2.className = "progress-block";
+        relaxProgressBar2.appendChild(block2);
       }
 
       // 載入資料
@@ -408,10 +552,14 @@
       }
 
       // 更新進度條
-      function updateProgress() {
-        const halfMinutes = Math.floor(seconds / 30); // 每30秒一格
-        const isGreen = seconds >= 300; // 超過5分鐘（300秒）
-        const blocks = document.querySelectorAll(".progress-block");
+      function updateProgress(
+        secondsCount,
+        progressContainer,
+        isRelaxMode = false
+      ) {
+        const halfMinutes = Math.floor(secondsCount / 30);
+        const isGreen = secondsCount >= 300;
+        const blocks = progressContainer.querySelectorAll(".progress-block");
 
         blocks.forEach((block, index) => {
           if (index < halfMinutes) {
@@ -432,7 +580,7 @@
         recordTimeEl.textContent = formatTime(bestRecord);
       }
 
-      // 開始/暫停
+      // 挑戰模式：開始/暫停
       startBtn.addEventListener("click", () => {
         if (!isRunning) {
           isRunning = true;
@@ -441,7 +589,10 @@
           timer = setInterval(() => {
             seconds++;
             currentTimeEl.textContent = formatTimeShort(seconds);
-            updateProgress();
+            const progressSection = document.querySelector(
+              "#challenge .progress-section"
+            );
+            updateProgress(seconds, progressSection);
           }, 1000);
         } else {
           isRunning = false;
@@ -474,8 +625,52 @@
             // 重置
             seconds = 0;
             currentTimeEl.textContent = "00:00";
-            updateProgress();
+            const progressSection = document.querySelector(
+              "#challenge .progress-section"
+            );
+            updateProgress(0, progressSection);
           }
+        }
+      });
+
+      // 輕鬆模式：開始/暫停/繼續
+      relaxStartBtn.addEventListener("click", () => {
+        if (!relaxIsRunning && !relaxIsPaused) {
+          // 開始
+          relaxIsRunning = true;
+          relaxStartBtn.textContent = "暫停 ⏸";
+          relaxStartBtn.classList.add("paused");
+          relaxTimer = setInterval(() => {
+            relaxSeconds++;
+            relaxTimeEl.textContent = formatTimeShort(relaxSeconds);
+            const progressSection = document.querySelector(
+              "#relax .progress-section"
+            );
+            updateProgress(relaxSeconds, progressSection, true);
+          }, 1000);
+        } else if (relaxIsRunning) {
+          // 暫停
+          relaxIsRunning = false;
+          relaxIsPaused = true;
+          relaxStartBtn.textContent = "繼續 ▶️";
+          relaxStartBtn.classList.remove("paused");
+          relaxStartBtn.classList.add("continue");
+          clearInterval(relaxTimer);
+        } else if (relaxIsPaused) {
+          // 繼續
+          relaxIsRunning = true;
+          relaxIsPaused = false;
+          relaxStartBtn.textContent = "暫停 ⏸";
+          relaxStartBtn.classList.remove("continue");
+          relaxStartBtn.classList.add("paused");
+          relaxTimer = setInterval(() => {
+            relaxSeconds++;
+            relaxTimeEl.textContent = formatTimeShort(relaxSeconds);
+            const progressSection = document.querySelector(
+              "#relax .progress-section"
+            );
+            updateProgress(relaxSeconds, progressSection, true);
+          }, 1000);
         }
       });
 
@@ -510,6 +705,28 @@
           saveData();
           renderHistory();
         }
+      });
+
+      // 切換模式時重置輕鬆模式
+      document.getElementById("challenge-tab").addEventListener("click", () => {
+        if (relaxIsRunning) {
+          clearInterval(relaxTimer);
+          relaxIsRunning = false;
+          relaxIsPaused = false;
+          relaxSeconds = 0;
+          relaxTimeEl.textContent = "00:00";
+          relaxStartBtn.textContent = "開始練習 🌿";
+          relaxStartBtn.classList.remove("paused", "continue");
+          const progressSection = document.querySelector(
+            "#relax .progress-section"
+          );
+          updateProgress(0, progressSection, true);
+        }
+      });
+
+      // 切換到輕鬆模式時提示
+      document.getElementById("relax-tab").addEventListener("click", () => {
+        // 可以在這裡加入切換提示
       });
 
       // 初始化
