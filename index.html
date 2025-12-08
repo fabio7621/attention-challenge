@@ -443,6 +443,17 @@
 
             <div class="control-section">
               <button class="start-btn" id="relaxStartBtn">開始練習 🌿</button>
+              <button
+                class="start-btn"
+                id="relaxResetBtn"
+                style="
+                  margin-top: 10px;
+                  background: linear-gradient(135deg, #f5576c 0%, #ff6b6b 100%);
+                  display: none;
+                "
+              >
+                重新開始 🔄
+              </button>
             </div>
           </div>
         </div>
@@ -473,6 +484,7 @@
       const progressBar2 = document.getElementById("progressBar2");
 
       const relaxStartBtn = document.getElementById("relaxStartBtn");
+      const relaxResetBtn = document.getElementById("relaxResetBtn");
       const relaxTimeEl = document.getElementById("relaxTime");
       const relaxProgressBar1 = document.getElementById("relaxProgressBar1");
       const relaxProgressBar2 = document.getElementById("relaxProgressBar2");
