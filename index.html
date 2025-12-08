@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>注意力挑戰 🎯</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .dashboard {
+        width: 100%;
+        max-width: 400px;
+        background: white;
+        border-radius: 30px;
+        padding: 30px 25px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 25px;
+      }
+
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 5px;
+      }
+
+      .emoji {
+        font-size: 32px;
+      }
+
+      .record-section {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        border-radius: 20px;
+        padding: 15px;
+        margin-bottom: 25px;
+        text-align: center;
+      }
+
+      .record-label {
+        font-size: 14px;
+        color: #8b5e3c;
+        margin-bottom: 8px;
+      }
+
+      .record-time {
+        font-size: 20px;
+        font-weight: bold;
+        color: #d4461c;
+      }
+
+      .current-time-section {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .current-time {
+        font-size: 36px;
+        font-weight: bold;
+        color: #667eea;
+        font-family: "Courier New", monospace;
+      }
+
+      .progress-section {
+        margin-bottom: 25px;
+      }
+
+      .progress-bar {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 5px;
+        margin-bottom: 10px;
+      }
+
+      .progress-bar:last-child {
+        margin-bottom: 0;
+      }
+
+      .progress-block {
+        aspect-ratio: 1;
+        background: #f0f0f0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .progress-block.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+      }
+
+      .control-section {
+        text-align: center;
+        margin-bottom: 25px;
+      }
+
+      .start-btn {
+        width: 100%;
+        padding: 18px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .start-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      }
+
+      .start-btn:active {
+        transform: translateY(0);
+      }
+
+      .start-btn.paused {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      }
+
+      .history-section {
+        margin-top: 20px;
+      }
+
+      .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .history-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .clear-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        color: #f5576c;
+        background: white;
+        border: 2px solid #f5576c;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .clear-btn:hover {
+        background: #f5576c;
+        color: white;
+      }
+
+      .history-list {
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .history-item {
+        background: #f8f9fa;
+        padding: 12px 15px;
+        border-radius: 12px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        animation: slideIn 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .history-date {
+        font-size: 12px;
+        color: #666;
+      }
+
+      .history-duration {
+        font-size: 14px;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .empty-history {
+        text-align: center;
+        color: #999;
+        padding: 20px;
+        font-size: 14px;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #667eea;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <div class="header">
+        <div class="emoji">🎯</div>
+        <div class="title">注意力挑戰</div>
+      </div>
+
+      <div class="record-section">
+        <div class="record-label">🏆 最長專注時間</div>
+        <div class="record-time" id="recordTime">00:00:00</div>
+      </div>
+
+      <div class="current-time-section">
+        <div class="current-time" id="currentTime">00:00</div>
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-bar" id="progressBar1"></div>
+        <div class="progress-bar" id="progressBar2"></div>
+      </div>
+
+      <div class="control-section">
+        <button class="start-btn" id="startBtn">開始專注 ✨</button>
+      </div>
+
+      <div class="history-section">
+        <div class="history-header">
+          <div class="history-title">📜 歷史記錄</div>
+          <button class="clear-btn" id="clearBtn">清除</button>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="empty-history">還沒有記錄哦～開始挑戰吧！</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let timer = null;
+      let seconds = 0;
+      let isRunning = false;
+      let history = [];
+      let bestRecord = 0;
+
+      const startBtn = document.getElementById("startBtn");
+      const currentTimeEl = document.getElementById("currentTime");
+      const recordTimeEl = document.getElementById("recordTime");
+      const historyListEl = document.getElementById("historyList");
+      const clearBtn = document.getElementById("clearBtn");
+      const progressBar1 = document.getElementById("progressBar1");
+      const progressBar2 = document.getElementById("progressBar2");
+
+      // 初始化進度條
+      for (let i = 0; i < 10; i++) {
+        const block1 = document.createElement("div");
+        block1.className = "progress-block";
+        progressBar1.appendChild(block1);
+
+        const block2 = document.createElement("div");
+        block2.className = "progress-block";
+        progressBar2.appendChild(block2);
+      }
+
+      // 載入資料
+      function loadData() {
+        const saved = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("focusData="));
+        if (saved) {
+          const data = JSON.parse(decodeURIComponent(saved.split("=")[1]));
+          history = data.history || [];
+          bestRecord = data.bestRecord || 0;
+          renderHistory();
+          updateRecordDisplay();
+        }
+      }
+
+      // 儲存資料
+      function saveData() {
+        const data = { history, bestRecord };
+        document.cookie = `focusData=${encodeURIComponent(
+          JSON.stringify(data)
+        )}; max-age=31536000; path=/`;
+      }
+
+      // 格式化時間
+      function formatTime(sec) {
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = sec % 60;
+        return `${h.toString().padStart(2, "0")}:${m
+          .toString()
+          .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+      }
+
+      function formatTimeShort(sec) {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return `${m.toString().padStart(2, "0")}:${s
+          .toString()
+          .padStart(2, "0")}`;
+      }
+
+      // 更新進度條
+      function updateProgress() {
+        const minutes = Math.floor(seconds / 60);
+        const blocks = document.querySelectorAll(".progress-block");
+        blocks.forEach((block, index) => {
+          if (index < minutes) {
+            block.classList.add("active");
+          } else {
+            block.classList.remove("active");
+          }
+        });
+      }
+
+      // 更新最長時間顯示
+      function updateRecordDisplay() {
+        recordTimeEl.textContent = formatTime(bestRecord);
+      }
+
+      // 開始/暫停
+      startBtn.addEventListener("click", () => {
+        if (!isRunning) {
+          isRunning = true;
+          startBtn.textContent = "暫停 ⏸";
+          startBtn.classList.add("paused");
+          timer = setInterval(() => {
+            seconds++;
+            currentTimeEl.textContent = formatTimeShort(seconds);
+            updateProgress();
+          }, 1000);
+        } else {
+          isRunning = false;
+          startBtn.textContent = "開始專注 ✨";
+          startBtn.classList.remove("paused");
+          clearInterval(timer);
+
+          if (seconds > 0) {
+            // 儲存記錄
+            const now = new Date();
+            history.unshift({
+              date: now.toLocaleString("zh-TW"),
+              duration: seconds,
+            });
+
+            // 更新最長時間
+            if (seconds > bestRecord) {
+              bestRecord = seconds;
+            }
+
+            saveData();
+            renderHistory();
+            updateRecordDisplay();
+
+            // 重置
+            seconds = 0;
+            currentTimeEl.textContent = "00:00";
+            updateProgress();
+          }
+        }
+      });
+
+      // 渲染歷史記錄
+      function renderHistory() {
+        if (history.length === 0) {
+          historyListEl.innerHTML =
+            '<div class="empty-history">還沒有記錄哦～開始挑戰吧！</div>';
+          return;
+        }
+
+        historyListEl.innerHTML = history
+          .map(
+            (item) => `
+                <div class="history-item">
+                    <div>
+                        <div class="history-date">${item.date}</div>
+                    </div>
+                    <div class="history-duration">${formatTimeShort(
+                      item.duration
+                    )}</div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      // 清除歷史
+      clearBtn.addEventListener("click", () => {
+        if (confirm("確定要清除所有歷史記錄嗎？")) {
+          history = [];
+          bestRecord = 0;
+          saveData();
+          renderHistory();
+          updateRecordDisplay();
+        }
+      });
+
+      // 初始化
+      loadData();
+    </script>
+  </body>
+</html>
