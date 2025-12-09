@@ -164,6 +164,28 @@
         font-family: "Courier New", monospace;
       }
 
+      .total-time-section {
+        text-align: center;
+        margin-top: 10px;
+        padding: 10px;
+        background: #f0f4ff;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+      }
+
+      .total-time-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 5px;
+      }
+
+      .total-time {
+        font-size: 18px;
+        font-weight: bold;
+        color: #764ba2;
+        font-family: "Courier New", monospace;
+      }
+
       .progress-section {
         margin-bottom: 25px;
       }
@@ -436,6 +458,11 @@
               <div class="current-time" id="relaxTime">00:00</div>
             </div>
 
+            <div class="total-time-section">
+              <div class="total-time-label">⏱️ 總花費時間（含暫停）</div>
+              <div class="total-time" id="relaxTotalTime">00:00:00</div>
+            </div>
+
             <div class="progress-section">
               <div class="progress-bar-container" id="relaxProgressBar1"></div>
               <div class="progress-bar-container" id="relaxProgressBar2"></div>
@@ -474,6 +501,8 @@
       let relaxSeconds = 0;
       let relaxIsRunning = false;
       let relaxIsPaused = false;
+      let relaxTotalSeconds = 0; // 總花費時間（含暫停）
+      let relaxTotalTimer = null; // 總時間計時器
 
       const startBtn = document.getElementById("startBtn");
       const currentTimeEl = document.getElementById("currentTime");
@@ -486,6 +515,7 @@
       const relaxStartBtn = document.getElementById("relaxStartBtn");
       const relaxResetBtn = document.getElementById("relaxResetBtn");
       const relaxTimeEl = document.getElementById("relaxTime");
+      const relaxTotalTimeEl = document.getElementById("relaxTotalTime");
       const relaxProgressBar1 = document.getElementById("relaxProgressBar1");
       const relaxProgressBar2 = document.getElementById("relaxProgressBar2");
 
@@ -653,6 +683,8 @@
           relaxStartBtn.textContent = "暫停 ⏸";
           relaxStartBtn.classList.add("paused");
           relaxResetBtn.style.display = "block";
+
+          // 專注時間計時器
           relaxTimer = setInterval(() => {
             relaxSeconds++;
             relaxTimeEl.textContent = formatTimeShort(relaxSeconds);
@@ -661,16 +693,23 @@
             );
             updateProgress(relaxSeconds, progressSection, true);
           }, 1000);
+
+          // 總時間計時器（一直跑）
+          relaxTotalTimer = setInterval(() => {
+            relaxTotalSeconds++;
+            relaxTotalTimeEl.textContent = formatTime(relaxTotalSeconds);
+          }, 1000);
         } else if (relaxIsRunning) {
-          // 暫停
+          // 暫停（只暫停專注時間，總時間繼續跑）
           relaxIsRunning = false;
           relaxIsPaused = true;
           relaxStartBtn.textContent = "繼續 ▶️";
           relaxStartBtn.classList.remove("paused");
           relaxStartBtn.classList.add("continue");
           clearInterval(relaxTimer);
+          // 注意：relaxTotalTimer 不停止，繼續計算總花費時間
         } else if (relaxIsPaused) {
-          // 繼續
+          // 繼續（重新開始專注時間計時）
           relaxIsRunning = true;
           relaxIsPaused = false;
           relaxStartBtn.textContent = "暫停 ⏸";
@@ -690,10 +729,13 @@
       // 輕鬆模式：重新開始
       relaxResetBtn.addEventListener("click", () => {
         clearInterval(relaxTimer);
+        clearInterval(relaxTotalTimer);
         relaxIsRunning = false;
         relaxIsPaused = false;
         relaxSeconds = 0;
+        relaxTotalSeconds = 0;
         relaxTimeEl.textContent = "00:00";
+        relaxTotalTimeEl.textContent = "00:00:00";
         relaxStartBtn.textContent = "開始練習 🌿";
         relaxStartBtn.classList.remove("paused", "continue");
         relaxResetBtn.style.display = "none";
@@ -740,10 +782,13 @@
       document.getElementById("challenge-tab").addEventListener("click", () => {
         if (relaxIsRunning || relaxIsPaused) {
           clearInterval(relaxTimer);
+          clearInterval(relaxTotalTimer);
           relaxIsRunning = false;
           relaxIsPaused = false;
           relaxSeconds = 0;
+          relaxTotalSeconds = 0;
           relaxTimeEl.textContent = "00:00";
+          relaxTotalTimeEl.textContent = "00:00:00";
           relaxStartBtn.textContent = "開始練習 🌿";
           relaxStartBtn.classList.remove("paused", "continue");
           relaxResetBtn.style.display = "none";
