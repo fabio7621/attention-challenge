@@ -170,7 +170,6 @@
         padding: 10px;
         background: #f0f4ff;
         border-radius: 12px;
-        margin-bottom: 2rem;
       }
 
       .total-time-label {
@@ -495,14 +494,18 @@
       let isRunning = false;
       let history = [];
       let bestRecord = 0;
+      let startTime = null; // 記錄開始時間戳
 
       // 輕鬆模式變數
       let relaxTimer = null;
       let relaxSeconds = 0;
       let relaxIsRunning = false;
       let relaxIsPaused = false;
-      let relaxTotalSeconds = 0; // 總花費時間（含暫停）
-      let relaxTotalTimer = null; // 總時間計時器
+      let relaxTotalSeconds = 0;
+      let relaxTotalTimer = null;
+      let relaxStartTime = null; // 專注開始時間
+      let relaxTotalStartTime = null; // 總時間開始時間
+      let relaxPausedTime = 0; // 累計暫停時間
 
       const startBtn = document.getElementById("startBtn");
       const currentTimeEl = document.getElementById("currentTime");
@@ -626,16 +629,19 @@
       startBtn.addEventListener("click", () => {
         if (!isRunning) {
           isRunning = true;
+          startTime = Date.now() - seconds * 1000; // 記錄開始時間點
           startBtn.textContent = "暫停 ⏸";
           startBtn.classList.add("paused");
+
           timer = setInterval(() => {
-            seconds++;
+            // 使用實際經過時間來計算，避免背景執行問題
+            seconds = Math.floor((Date.now() - startTime) / 1000);
             currentTimeEl.textContent = formatTimeShort(seconds);
             const progressSection = document.querySelector(
               "#challenge .progress-section"
             );
             updateProgress(seconds, progressSection);
-          }, 1000);
+          }, 100); // 更頻繁更新顯示，但使用時間戳計算
         } else {
           isRunning = false;
           startBtn.textContent = "開始專注 ✨";
@@ -666,6 +672,7 @@
 
             // 重置
             seconds = 0;
+            startTime = null;
             currentTimeEl.textContent = "00:00";
             const progressSection = document.querySelector(
               "#challenge .progress-section"
@@ -680,49 +687,60 @@
         if (!relaxIsRunning && !relaxIsPaused) {
           // 開始
           relaxIsRunning = true;
+          const now = Date.now();
+          relaxStartTime = now - relaxSeconds * 1000;
+          relaxTotalStartTime = now - relaxTotalSeconds * 1000;
           relaxStartBtn.textContent = "暫停 ⏸";
           relaxStartBtn.classList.add("paused");
           relaxResetBtn.style.display = "block";
 
           // 專注時間計時器
           relaxTimer = setInterval(() => {
-            relaxSeconds++;
+            relaxSeconds = Math.floor((Date.now() - relaxStartTime) / 1000);
             relaxTimeEl.textContent = formatTimeShort(relaxSeconds);
             const progressSection = document.querySelector(
               "#relax .progress-section"
             );
             updateProgress(relaxSeconds, progressSection, true);
-          }, 1000);
+          }, 100);
 
-          // 總時間計時器（一直跑）
+          // 總時間計時器
           relaxTotalTimer = setInterval(() => {
-            relaxTotalSeconds++;
+            relaxTotalSeconds = Math.floor(
+              (Date.now() - relaxTotalStartTime) / 1000
+            );
             relaxTotalTimeEl.textContent = formatTime(relaxTotalSeconds);
-          }, 1000);
+          }, 100);
         } else if (relaxIsRunning) {
-          // 暫停（只暫停專注時間，總時間繼續跑）
+          // 暫停
           relaxIsRunning = false;
           relaxIsPaused = true;
           relaxStartBtn.textContent = "繼續 ▶️";
           relaxStartBtn.classList.remove("paused");
           relaxStartBtn.classList.add("continue");
           clearInterval(relaxTimer);
-          // 注意：relaxTotalTimer 不停止，繼續計算總花費時間
+          relaxPausedTime = Date.now(); // 記錄暫停時間點
+          // relaxTotalTimer 繼續執行
         } else if (relaxIsPaused) {
-          // 繼續（重新開始專注時間計時）
+          // 繼續
           relaxIsRunning = true;
           relaxIsPaused = false;
+          // 調整開始時間，扣除暫停期間
+          const pauseDuration = Date.now() - relaxPausedTime;
+          relaxStartTime += pauseDuration;
+
           relaxStartBtn.textContent = "暫停 ⏸";
           relaxStartBtn.classList.remove("continue");
           relaxStartBtn.classList.add("paused");
+
           relaxTimer = setInterval(() => {
-            relaxSeconds++;
+            relaxSeconds = Math.floor((Date.now() - relaxStartTime) / 1000);
             relaxTimeEl.textContent = formatTimeShort(relaxSeconds);
             const progressSection = document.querySelector(
               "#relax .progress-section"
             );
             updateProgress(relaxSeconds, progressSection, true);
-          }, 1000);
+          }, 100);
         }
       });
 
@@ -734,6 +752,9 @@
         relaxIsPaused = false;
         relaxSeconds = 0;
         relaxTotalSeconds = 0;
+        relaxStartTime = null;
+        relaxTotalStartTime = null;
+        relaxPausedTime = 0;
         relaxTimeEl.textContent = "00:00";
         relaxTotalTimeEl.textContent = "00:00:00";
         relaxStartBtn.textContent = "開始練習 🌿";
@@ -787,6 +808,9 @@
           relaxIsPaused = false;
           relaxSeconds = 0;
           relaxTotalSeconds = 0;
+          relaxStartTime = null;
+          relaxTotalStartTime = null;
+          relaxPausedTime = 0;
           relaxTimeEl.textContent = "00:00";
           relaxTotalTimeEl.textContent = "00:00:00";
           relaxStartBtn.textContent = "開始練習 🌿";
